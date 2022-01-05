@@ -1,7 +1,17 @@
 <template>
   <v-app align="center" class="py-16 px-6">
     <h1>MY CRUD</h1>
-    <h1>{{ id }}</h1>
+
+    <v-row class="mt-6 mb-6 mx-0" justify="center" align="center">
+      <form @submit.prevent="add">
+        <input type="hidden" v-model="form.id" />
+        <input type="text" v-model="form.name" placeholder="Type Anything" />
+        <button class="button-1" type="submit" v-show="!updateSubmit">
+          Create
+        </button>
+      </form>
+    </v-row>
+
     <v-data-table
       :headers="headers"
       :items="users"
@@ -9,27 +19,11 @@
       class="mx-16 mt-6"
       align="center"
     >
-      <template v-slot:top>
-        <v-row class="mb-6 mx-0" justify="center" align="center">
-          <form @submit.prevent="add">
-            <input type="hidden" v-model="form.id" />
-            <input
-              type="text"
-              v-model="form.name"
-              placeholder="Type Anything"
-            />
-            <button class="button-1" type="submit" v-show="!updateSubmit">
-              Create
-            </button>
-          </form>
-        </v-row>
-      </template>
-
-      <template v-slot:item.actions="{ user }">
+      <template v-slot:item.actions="{ item }">
         <v-row justify="space-around">
           <v-btn
             class="pa-0 red mr-5"
-            @click="del(user.id)"
+            @click="del(item)"
             min-width="40"
             min-height="40"
             v-bind:disabled="buttons"
@@ -50,6 +44,7 @@ export default {
     buttons: true,
     result: null,
     updateSubmit: false,
+
     users: [],
     headers: [
       {
@@ -82,35 +77,42 @@ export default {
     this.load();
   },
   methods: {
-    load() {
-      axios
-        .get("https://frontend.idaman.co.id/api/profession")
-        .then((res) => {
-          this.users = res.data.data;
-          this.result = res.data.meta.message;
-          setTimeout(() => {
-            this.buttons = false;
-          }, 800);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+    async load() {
+      try {
+        const res = await axios.get(
+          "https://frontend.idaman.co.id/api/profession"
+        );
+        this.users = res.data.data;
+        this.result = res.data.meta.message;
+        this.buttons = false;
+      } catch (err) {
+        console.log(err);
+      }
     },
-    add() {
-      axios
-        .post("https://frontend.idaman.co.id/api/profession", this.form)
-        .then(() => {
-          this.load();
-          this.form.name = "";
-        });
+    async add() {
+      try {
+        await axios.post(
+          "https://frontend.idaman.co.id/api/profession",
+          this.form
+        );
+        await this.load();
+        this.form.name = "";
+      } catch (err) {
+        console.log(err);
+      }
     },
 
-    del(user) {
-      axios
-        .delete("https://frontend.idaman.co.id/api/profession/" + user)
-        .then(() => {
-          this.load();
-        });
+    async del(user) {
+      console.log(user);
+      try {
+        const res = await axios.delete(
+          "https://frontend.idaman.co.id/api/profession/" + user.id
+        );
+        console.log(res);
+        await this.load();
+      } catch (err) {
+        console.log(err);
+      }
     },
   },
 };
