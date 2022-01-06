@@ -1,17 +1,19 @@
 <template>
   <v-app align="center" class="py-16 px-6">
     <h1>MY CRUD</h1>
-
+    <p>{{ result }}.</p>
     <v-row class="mt-6 mb-6 mx-0" justify="center" align="center">
       <form @submit.prevent="add">
         <input type="hidden" v-model="form.id" />
         <input type="text" v-model="form.name" placeholder="Type Anything" />
-        <button class="button-1" type="submit" v-show="!updateSubmit">
+        <button class="button-1 primary" type="submit" v-show="!updateSubmit">
           Create
+        </button>
+        <button type="button" v-show="updateSubmit" @click="update(form)">
+          Update
         </button>
       </form>
     </v-row>
-
     <v-data-table
       :headers="headers"
       :items="users"
@@ -22,11 +24,19 @@
       <template v-slot:item.actions="{ item }">
         <v-row justify="space-around">
           <v-btn
+            class="pa-0 primary mr-5"
+            @click="edit(item)"
+            min-width="40"
+            min-height="40"
+          >
+            <v-icon color="white" size="20">mdi-pencil</v-icon>
+          </v-btn>
+
+          <v-btn
             class="pa-0 red mr-5"
             @click="del(item)"
             min-width="40"
             min-height="40"
-            v-bind:disabled="buttons"
           >
             <v-icon color="white" size="20">mdi-delete</v-icon>
           </v-btn>
@@ -38,10 +48,7 @@
 <script>
 import axios from "axios";
 export default {
-  name: "DataTower",
-
   data: () => ({
-    buttons: true,
     result: null,
     updateSubmit: false,
 
@@ -52,7 +59,6 @@ export default {
         align: "center",
         value: "id",
       },
-
       {
         text: "Name",
         value: "name",
@@ -66,7 +72,6 @@ export default {
         align: "center",
       },
     ],
-
     form: {
       id: "",
       name: "",
@@ -80,7 +85,7 @@ export default {
     async load() {
       try {
         const res = await axios.get(
-          "https://frontend.idaman.co.id/api/profession"
+          "https://frontend.idaman.co.id/api/profession/"
         );
         this.users = res.data.data;
         this.result = res.data.meta.message;
@@ -92,7 +97,7 @@ export default {
     async add() {
       try {
         await axios.post(
-          "https://frontend.idaman.co.id/api/profession",
+          "https://frontend.idaman.co.id/api/profession/",
           this.form
         );
         await this.load();
@@ -119,39 +124,15 @@ export default {
 </script>
 
 <style scoped>
-h4,
-h2 {
-  font-weight: 500;
-}
-
-h2 {
-  color: black;
-}
-
-.span-class {
-  font-weight: 600 !important;
-}
-
 button {
-  background-color: #008cba;
-  border: none;
   color: white;
   padding: 15px 32px;
-  text-align: center;
-
-  display: inline-block;
-  font-size: 16px;
+  font-size: 1rem;
   margin: 1rem;
   cursor: pointer;
   border-radius: 0.5em;
 }
-.button-1 {
-  margin: auto !important;
-}
-.button-2 {
-  background-color: #f44336;
-  margin: 0 1.8rem 0 1.8rem;
-}
+
 input[type="text"],
 select {
   width: 100%;
@@ -159,8 +140,7 @@ select {
   margin: 8px 0;
   display: inline-block;
   border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
+  border-radius: 0.5em;
 }
 input[type="text"]:focus {
   border: 3px solid #555;
