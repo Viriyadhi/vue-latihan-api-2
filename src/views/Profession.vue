@@ -9,9 +9,6 @@
         <button class="button-1 primary" type="submit" v-show="!updateSubmit">
           Create
         </button>
-        <button type="button" v-show="updateSubmit" @click="update(form)">
-          Update
-        </button>
       </form>
     </v-row>
     <v-data-table

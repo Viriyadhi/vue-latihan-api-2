@@ -1,14 +1,69 @@
 <template>
   <v-app align="center" class="py-16 px-6">
     <h1>MY CRUD</h1>
-    <p>{{ result }}.</p>
+    <h4>{{ result }}</h4>
     <v-row class="mt-6 mb-6 mx-0" justify="center" align="center">
-      <form @submit.prevent="add">
+      <form v-if="!this.isEditing" @submit.prevent="add">
         <input type="hidden" v-model="form.id" />
-        <input type="text" v-model="form.name" placeholder="Type Anything" />
+        <input type="text" v-model="form.name" placeholder="Type Your Name" />
+        <input
+          type="text"
+          v-model="form.phone"
+          placeholder="Type Your Phone Number"
+        />
+        <!-- <input
+            type="text"
+            v-model="form.profession_id"
+            placeholder="Type Your Professions"
+          /> -->
+
+        <v-select
+          label="Select Your Profession"
+          :items="professions"
+          v-model="form.profession_id"
+          item-text="name"
+          item-value="id"
+          persistent-hint
+          single-line
+        ></v-select>
+
         <button class="button-1 primary" type="submit" v-show="!updateSubmit">
           Create
         </button>
+      </form>
+      <form v-else @submit.prevent="edit">
+        <input type="hidden" v-model="form.id" />
+        <input type="text" v-model="form.name" placeholder="Edit Your Name" />
+        <input
+          type="text"
+          v-model="form.phone"
+          placeholder="Edit Your Phone Number"
+        />
+        <!-- <input
+            type="text"
+            v-model="form.profession_id"
+            placeholder="Type Your Professions"
+          /> -->
+
+        <v-select
+          label="Change Your Profession"
+          :items="professions"
+          v-model="form.profession_id"
+          item-text="name"
+          item-value="id"
+          persistent-hint
+          single-line
+        ></v-select>
+
+        <button
+          @click="update(item)"
+          class="button-1 primary"
+          type="submit"
+          v-show="!updateSubmit"
+        >
+          Update
+        </button>
+        <p @click="isEdit(null)">Back to Create Form</p>
       </form>
     </v-row>
     <v-data-table
@@ -22,7 +77,7 @@
         <v-row justify="space-around">
           <v-btn
             class="pa-0 primary mr-5"
-            @click="edit(item)"
+            @click="isEdit(item)"
             min-width="40"
             min-height="40"
           >
@@ -48,8 +103,10 @@ export default {
   data: () => ({
     result: null,
     updateSubmit: false,
-
+    professions: [],
     users: [],
+    isEditing: false,
+
     headers: [
       {
         text: "ID",
@@ -63,6 +120,18 @@ export default {
         align: "center",
       },
       {
+        text: "Phone",
+        value: "phone",
+        sortable: false,
+        align: "center",
+      },
+      {
+        text: "Professions",
+        value: "profession_id",
+        sortable: false,
+        align: "center",
+      },
+      {
         text: "Actions",
         value: "actions",
         sortable: false,
@@ -70,13 +139,16 @@ export default {
       },
     ],
     form: {
-      id: "",
+      id: 0,
       name: "",
+      phone: "",
+      profession_id: 0,
     },
   }),
 
   mounted() {
     this.load();
+    this.getProfessions();
   },
   methods: {
     async load() {
@@ -91,14 +163,59 @@ export default {
         console.log(err);
       }
     },
+
+    isEdit(value) {
+      if (value) {
+        console.log(value);
+        this.isEditing = true;
+        this.form = value;
+      } else {
+        this.isEditing = false;
+      }
+    },
+
+    async update() {
+      try {
+        await axios.put(
+          "https://frontend.idaman.co.id/api/person/",
+          this.form.id
+        );
+        await this.load();
+      } catch (err) {
+        console.log(err);
+      }
+    },
+
+    /* eslint-disable */
+    async getProfessions() {
+      try {
+        const data = await axios.get(
+          "https://frontend.idaman.co.id/api/profession/"
+        );
+        // data.data.data.forEach((element) => {
+        // this.professions.push(element.name);
+        // });
+
+        this.professions = data.data.data;
+      } catch (err) {
+        console.log(err);
+      }
+    },
+
     async add() {
       try {
+        console.log(this.form);
         await axios.post(
           "https://frontend.idaman.co.id/api/person/",
           this.form
         );
         await this.load();
-        this.form.name = "";
+        this.form = {
+          id: "",
+          name: "",
+          phone: "",
+          profession_id: 0,
+        };
       } catch (err) {
         console.log(err);
       }
@@ -112,6 +229,7 @@ export default {
         );
         console.log(res);
         await this.load();
+        await this.initialize();
       } catch (err) {
         console.log(err);
       }
@@ -121,6 +239,9 @@ export default {
 </script>
 
 <style scoped>
+p {
+  cursor: pointer;
+}
 button {
   color: white;
   padding: 15px 32px;
@@ -132,7 +253,7 @@ button {
 
 input[type="text"],
 select {
-  width: 100%;
+  width: 85%;
   padding: 1rem 1.5rem;
   margin: 8px 0;
   display: inline-block;
