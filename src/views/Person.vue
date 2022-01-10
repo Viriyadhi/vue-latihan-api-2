@@ -177,16 +177,21 @@ export default {
     async update() {
       try {
         await axios.put(
-          "https://frontend.idaman.co.id/api/person/",
-          this.form.id
+          "https://frontend.idaman.co.id/api/person/" + this.form.id,
+          this.form
         );
         await this.load();
+        this.form = {
+          id: "",
+          name: "",
+          phone: "",
+          profession_id: 0,
+        };
       } catch (err) {
         console.log(err);
       }
     },
 
-    /* eslint-disable */
     async getProfessions() {
       try {
         const data = await axios.get(
