@@ -171,6 +171,7 @@ export default {
         this.form = value;
       } else {
         this.isEditing = false;
+        this.form = {};
       }
     },
 
@@ -181,12 +182,8 @@ export default {
           this.form
         );
         await this.load();
-        this.form = {
-          id: "",
-          name: "",
-          phone: "",
-          profession_id: 0,
-        };
+        this.form = {};
+        this.isEditing = false;
       } catch (err) {
         console.log(err);
       }
